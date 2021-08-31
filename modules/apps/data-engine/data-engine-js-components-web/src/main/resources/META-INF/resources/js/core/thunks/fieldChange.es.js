@@ -64,6 +64,7 @@ let lastEditedPages = [];
 export default function fieldChange({
 	defaultLanguageId,
 	editingLanguageId,
+	instanceId,
 	pages,
 	portletNamespace,
 	properties,
@@ -141,8 +142,9 @@ export default function fieldChange({
 				});
 
 				dispatch({
-					payload: mergedPages,
+					payload: {pages: mergedPages, instanceId},
 					type: EVENT_TYPES.FIELD.EVALUATE,
+					forceDispatch: true,
 				});
 			}
 			catch (error) {

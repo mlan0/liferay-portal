@@ -35,8 +35,8 @@ export default function useThunk<R extends React.Reducer<any, any>>([
 	const thunkDispatch = useRef((action: any) => {
 		if (isMounted()) {
 			if (typeof action === 'function') {
-				return action((payload: any) => {
-					if (isMounted()) {
+				return action(({forceDispatch, ...payload}: any) => {
+					if (isMounted() || forceDispatch) {
 						dispatch(payload);
 					}
 				});

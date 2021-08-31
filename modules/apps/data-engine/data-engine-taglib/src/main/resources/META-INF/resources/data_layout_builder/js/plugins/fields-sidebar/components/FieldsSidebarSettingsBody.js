@@ -119,7 +119,7 @@ export default function FieldsSidebarSettingsBody() {
 						}
 						case CORE_EVENT_TYPES.FIELD.EVALUATE:
 							dispatch({
-								payload: {settingsContextPages: payload},
+								payload,
 								type,
 							});
 							break;

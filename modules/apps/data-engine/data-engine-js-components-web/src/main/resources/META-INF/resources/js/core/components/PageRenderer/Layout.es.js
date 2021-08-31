@@ -88,6 +88,7 @@ export const Layout = ({components, editable, rows, viewMode}) => {
 									onChange={(properties) =>
 										dispatch(
 											createFieldChange({
+												instanceId : fieldProps.field?.instanceId,
 												properties,
 												submitButtonId,
 											})

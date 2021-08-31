@@ -467,7 +467,7 @@ export default (state, action, config) => {
 			};
 		}
 		case EVENT_TYPES.FIELD.EVALUATE: {
-			const {settingsContextPages} = action.payload;
+			const {instanceId, pages: settingsContextPages} = action.payload;
 			const {
 				defaultLanguageId,
 				editingLanguageId,
@@ -481,39 +481,43 @@ export default (state, action, config) => {
 				submitButtonId,
 			} = config;
 
-			const fieldName = getField(settingsContextPages, 'name');
-			const focusedFieldName = getField(
-				focusedField.settingsContext.pages,
-				'name'
-			);
+			let newField;
 
-			if (fieldName.instanceId !== focusedFieldName.instanceId) {
-				return state;
+			const isFieldFocused = (instanceId === focusedField.instanceId);
+
+			if (isFieldFocused) {
+				newField = focusedField;
+			} else {
+				const visitor = new PagesVisitor(pages);
+
+				newField = visitor.findField(
+					(field) => instanceId === field.instanceId
+				);
 			}
+
+			newField = {
+				...newField,
+				settingsContext: {
+					...newField.settingsContext,
+					pages: settingsContextPages,
+				},
+			};
 
 			const fieldNameGenerator = getFieldNameGenerator(
 				pages,
 				generateFieldNameUsingFieldLabel
 			);
 
-			let newFocusedField = {
-				...focusedField,
-				settingsContext: {
-					...focusedField.settingsContext,
-					pages: settingsContextPages,
-				},
-			};
-
 			const settingsContextVisitor = new PagesVisitor(
 				settingsContextPages
 			);
 
 			settingsContextVisitor.mapFields(({fieldName, value}) => {
-				newFocusedField = updateFieldProperty({
+				newField = updateFieldProperty({
 					defaultLanguageId,
 					editingLanguageId,
 					fieldNameGenerator,
-					focusedField: newFocusedField,
+					focusedField: newField,
 					generateFieldNameUsingFieldLabel,
 					pages,
 					propertyName: fieldName,
@@ -524,13 +528,7 @@ export default (state, action, config) => {
 			const visitor = new PagesVisitor(pages);
 
 			const newPages = visitor.mapFields(
-				(field) => {
-					if (field.fieldName !== fieldName.value) {
-						return field;
-					}
-
-					return newFocusedField;
-				},
+				(field) => field.instanceId === instanceId ? newField : field,
 				true,
 				true
 			);
@@ -538,12 +536,12 @@ export default (state, action, config) => {
 			enableSubmitButton(submitButtonId);
 
 			return {
-				focusedField: newFocusedField,
+				focusedField: isFieldFocused ? newField : focusedField,
 				pages: newPages,
 				rules: updateRulesReferences(
 					rules || [],
 					focusedField,
-					newFocusedField
+					newField
 				),
 			};
 		}
